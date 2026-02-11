@@ -16,6 +16,8 @@ Description: A lemmatized critical edition of the complete Pali Canon
     Covers all three pitakas (Sutta, Vinaya, Abhidhamma) with
     5,777 individual text units. The companion package 'tipitaka'
     provides the original VRI edition data and Pali text tools.
+URL: https://github.com/dangerzig/tipitaka.critical
+BugReports: https://github.com/dangerzig/tipitaka.critical/issues
 License: CC0
 Encoding: UTF-8
 LazyData: true
