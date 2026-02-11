@@ -1,0 +1,29 @@
+#' Full Text of the Pali Canon (Critical Edition)
+#'
+#' Surface-form and lemmatized text for every text unit in the Tipitaka.
+#' This is the only dataset shipped with the package; all other data
+#' is computed on demand from this text.
+#'
+#' @format A data frame with 5,777 rows and 6 columns:
+#' \describe{
+#'   \item{id}{Text unit ID (e.g., "dn1", "mn1", "sn1.1", "mahavagga")}
+#'   \item{collection}{Collection code (dn, mn, sn, an, kn, vinaya, abhidhamma)}
+#'   \item{pitaka}{Pitaka name (sutta, vinaya, abhidhamma)}
+#'   \item{title}{Pali title of the text}
+#'   \item{text}{Full surface-form Pali text}
+#'   \item{text_lemmatized}{Same text with each word replaced by its lemma headword}
+#' }
+#'
+#' @source Critical edition based on five-witness collation of PTS/GRETIL,
+#'   SuttaCentral, VRI (Chattha Sangayana), Buddha Jayanti Tipitaka (BJT),
+#'   and Thai Royal Edition. Lemmatization via the Digital Pali Dictionary.
+#'
+#' @examples
+#' # Number of text units per pitaka
+#' table(texts$pitaka)
+#'
+#' # Get text of the Brahmajala Sutta (DN 1)
+#' dn1 <- texts[texts$id == "dn1", ]
+#' cat(substr(dn1$text, 1, 200), "...\n")
+#'
+"texts"

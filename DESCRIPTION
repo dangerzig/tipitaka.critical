@@ -1,0 +1,30 @@
+Package: tipitaka.critical
+Type: Package
+Title: Lemmatized Critical Edition of the Pali Canon
+Version: 0.1.0
+Authors@R:
+    person(given = "Dan",
+           family = "Zigmond",
+           role = c("aut", "cre"),
+           email = "djz@shmonk.com")
+Description: A lemmatized critical edition of the complete Pali Canon
+    (Tipitaka), the canonical scripture of Theravadin Buddhism. Based
+    on a five-witness collation of PTS (via GRETIL), SuttaCentral,
+    VRI (Chattha Sangayana), Buddha Jayanti Tipitaka, and the Thai
+    Royal Edition. All text is lemmatized using the Digital Pali
+    Dictionary, grouping inflected forms by dictionary headword.
+    Covers all three pitakas (Sutta, Vinaya, Abhidhamma) with
+    5,777 individual text units. The companion package 'tipitaka'
+    provides the original VRI edition data and Pali text tools.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+LazyDataCompression: xz
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 3.5),
+    Matrix
+Suggests:
+    tipitaka,
+    dplyr,
+    tidyr
