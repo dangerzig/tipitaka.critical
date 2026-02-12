@@ -19,6 +19,7 @@ Finds all text units containing a specific lemma, sorted by frequency
 (most frequent first).
 }
 \examples{
+\donttest{
 # Find texts mentioning "nibbana"
 nibbana <- search_lemma("nibbana")
 head(nibbana)
@@ -26,5 +27,6 @@ head(nibbana)
 # Find texts mentioning "dhamma"
 dhamma <- search_lemma("dhamma")
 head(dhamma[, c("id", "collection", "n", "freq")])
+}
 
 }

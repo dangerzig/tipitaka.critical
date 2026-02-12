@@ -11,7 +11,7 @@ based on a five-witness collation with the Digital Pali Dictionary.
 }
 \details{
 This package ships the full text data (\code{\link{texts}}) and
-provides functions to compute derived data on demand:
+computes derived data on first access:
 \itemize{
   \item \code{\link{lemmas}}: lemma frequency table
   \item \code{\link{dtm}}: sparse document-term matrix

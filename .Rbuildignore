@@ -3,3 +3,5 @@
 ^data-raw$
 ^\.claude$
 ^\.github$
+^cran-comments\.md$
+^\.gitignore$
