@@ -7,3 +7,5 @@
 ^\.gitignore$
 ^CRAN-SUBMISSION$
 ^README\.md$
+^doc$
+^Meta$
