@@ -21,6 +21,14 @@ provides functions to compute derived data on demand:
 For the original VRI edition and Pali text tools, see the companion
 package \pkg{tipitaka}.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/dangerzig/tipitaka.critical}
+  \item Report bugs at \url{https://github.com/dangerzig/tipitaka.critical/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Dan Zigmond \email{djz@shmonk.com}
 
