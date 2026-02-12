@@ -4,7 +4,7 @@
 #' based on a five-witness collation with the Digital Pali Dictionary.
 #'
 #' This package ships the full text data (\code{\link{texts}}) and
-#' provides functions to compute derived data on demand:
+#' computes derived data on first access:
 #' \itemize{
 #'   \item \code{\link{lemmas}}: lemma frequency table
 #'   \item \code{\link{dtm}}: sparse document-term matrix
@@ -18,8 +18,15 @@
 #' @name tipitaka.critical
 "_PACKAGE"
 
-# Internal cache for computed data
-.cache <- new.env(parent = emptyenv())
+# Suppress R CMD check NOTE for LazyData and delayedAssign globals
+utils::globalVariables(c("texts", "lemmas", "dtm"))
 
-# Suppress R CMD check NOTE for LazyData globals
-utils::globalVariables("texts")
+.onLoad <- function(libname, pkgname) {
+  ns <- parent.env(environment())
+  delayedAssign("lemmas",
+    tryCatch(.compute_lemmas(), error = function(e) NULL),
+    eval.env = ns, assign.env = ns)
+  delayedAssign("dtm",
+    tryCatch(.compute_dtm(), error = function(e) NULL),
+    eval.env = ns, assign.env = ns)
+}

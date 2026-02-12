@@ -10,6 +10,7 @@
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' # Find texts mentioning "nibbana"
 #' nibbana <- search_lemma("nibbana")
 #' head(nibbana)
@@ -17,9 +18,10 @@
 #' # Find texts mentioning "dhamma"
 #' dhamma <- search_lemma("dhamma")
 #' head(dhamma[, c("id", "collection", "n", "freq")])
+#' }
 #'
 search_lemma <- function(lemma) {
-  l <- lemmas()
+  l <- lemmas
   result <- l[l$word == lemma, ]
   result[order(-result$freq), ]
 }

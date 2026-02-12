@@ -1,11 +1,10 @@
 #' Lemma Frequency Table
 #'
-#' Computes and caches a lemma frequency table from the lemmatized text.
-#' On first call this tokenizes \code{\link{texts}$text_lemmatized} and
-#' counts word frequencies per text unit (takes ~5 seconds). Subsequent
-#' calls return the cached result instantly.
+#' Lemma frequency table computed from the lemmatized text.
+#' Tokenizes \code{\link{texts}$text_lemmatized} and counts word
+#' frequencies per text unit on first access (~5 seconds).
 #'
-#' @return A data frame with columns:
+#' @format A data frame with the variables:
 #' \describe{
 #'   \item{word}{Lemma (dictionary headword)}
 #'   \item{n}{Count of this lemma in this text unit}
@@ -18,26 +17,23 @@
 #' @export
 #'
 #' @examples
-#' # Get lemma frequencies (first call computes; subsequent calls are instant)
-#' l <- lemmas()
-#' head(l)
+#' \donttest{
+#' # First access triggers computation (~5 seconds)
+#' head(lemmas)
 #'
-#' # Top lemmas across the entire canon
-#' total_counts <- tapply(l$n, l$word, sum)
-#' head(sort(total_counts, decreasing = TRUE), 20)
+#' # Most frequent lemmas across the entire canon
+#' totals <- tapply(lemmas$n, lemmas$word, sum)
+#' head(sort(totals, decreasing = TRUE), 20)
+#' }
 #'
-lemmas <- function() {
-  if (is.null(.cache$lemmas)) {
-    .cache$lemmas <- .compute_lemmas()
-  }
-  .cache$lemmas
-}
+lemmas <- NULL
 
 .compute_lemmas <- function() {
-  rows <- vector("list", nrow(texts))
+  txt <- get("texts", envir = asNamespace("tipitaka.critical"))
+  rows <- vector("list", nrow(txt))
 
-  for (i in seq_len(nrow(texts))) {
-    words <- strsplit(texts$text_lemmatized[i], "\\s+")[[1]]
+  for (i in seq_len(nrow(txt))) {
+    words <- strsplit(txt$text_lemmatized[i], "\\s+")[[1]]
     words <- words[nzchar(words)]
     if (length(words) == 0) next
 
@@ -49,9 +45,9 @@ lemmas <- function() {
       n = as.integer(counts),
       total = total,
       freq = as.numeric(counts) / total,
-      id = texts$id[i],
-      collection = texts$collection[i],
-      pitaka = texts$pitaka[i],
+      id = txt$id[i],
+      collection = txt$collection[i],
+      pitaka = txt$pitaka[i],
       stringsAsFactors = FALSE
     )
   }

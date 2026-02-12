@@ -1,35 +1,28 @@
 #' Document-Term Matrix (Sparse)
 #'
-#' Computes and caches a sparse document-term matrix from \code{\link{lemmas}}.
+#' Sparse document-term matrix computed from \code{\link{lemmas}}.
 #' Each row is a text unit, each column is a lemma, and values are
 #' frequencies (proportions). Stored as a \code{dgCMatrix} from the
-#' Matrix package.
+#' Matrix package. Computed on first access.
 #'
-#' @return A sparse matrix of class \code{\link[Matrix:dgCMatrix-class]{dgCMatrix}}
+#' @format A sparse matrix of class \code{\link[Matrix:dgCMatrix-class]{dgCMatrix}}
 #'   with text unit IDs as row names and lemma headwords as column names.
 #' @export
 #'
 #' @examples
 #' \donttest{
-#' # Get the document-term matrix
-#' m <- dtm()
-#' dim(m)
+#' # Sparse document-term matrix
+#' dim(dtm)
 #'
-#' # Cluster Digha Nikaya suttas
-#' dn <- m[grep("^dn", rownames(m)), ]
-#' hc <- hclust(dist(dn))
-#' plot(hc, main = "DN Sutta Clustering")
+#' # Hierarchical clustering of text units
+#' d <- dist(dtm[1:20, ])
+#' plot(hclust(d))
 #' }
 #'
-dtm <- function() {
-  if (is.null(.cache$dtm)) {
-    .cache$dtm <- .compute_dtm()
-  }
-  .cache$dtm
-}
+dtm <- NULL
 
 .compute_dtm <- function() {
-  l <- lemmas()
+  l <- get("lemmas", envir = asNamespace("tipitaka.critical"))
 
   # Build vocabulary
   vocab <- sort(unique(l$word))
@@ -40,13 +33,11 @@ dtm <- function() {
   doc_idx <- match(l$id, docs)
 
   # Build sparse matrix
-  m <- sparseMatrix(
+  sparseMatrix(
     i = doc_idx,
     j = word_idx,
     x = l$freq,
     dims = c(length(docs), length(vocab)),
     dimnames = list(docs, vocab)
   )
-
-  m
 }
