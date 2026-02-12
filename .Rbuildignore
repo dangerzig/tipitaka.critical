@@ -5,3 +5,5 @@
 ^\.github$
 ^cran-comments\.md$
 ^\.gitignore$
+^CRAN-SUBMISSION$
+^README\.md$
