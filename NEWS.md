@@ -1,4 +1,4 @@
-# tipitaka.critical 0.1.0
+# tipitaka.critical 1.0.0
 
 * Initial release with lemmatized critical edition of the complete Pali Canon.
 * 5,777 text units across all three pitakas (Sutta, Vinaya, Abhidhamma).
