@@ -1,0 +1,250 @@
+---
+title: "Introduction to tipitaka.critical"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to tipitaka.critical}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The **tipitaka.critical** package provides a lemmatized critical edition of the
+complete Pali Canon (Tipitaka), the canonical scripture of Theravada Buddhism.
+The text is based on a five-witness collation and lemmatized using the Digital
+Pali Dictionary.
+
+## The texts dataset
+
+The package ships a single dataset, `texts`, containing 5,777 text units
+spanning all three pitakas:
+
+```{r texts-overview}
+library(tipitaka.critical)
+
+dim(texts)
+names(texts)
+```
+
+Each row is a text unit (a sutta, a chapter, or a standalone text) with both the
+surface-form Pali text and a lemmatized version where every word is replaced by
+its dictionary headword:
+
+```{r texts-example}
+# The Brahmajala Sutta (DN 1)
+dn1 <- texts[texts$id == "dn1", ]
+dn1$title
+
+# First 120 characters of surface text
+cat(substr(dn1$text, 1, 120), "...\n")
+
+# Same passage, lemmatized
+cat(substr(dn1$text_lemmatized, 1, 120), "...\n")
+```
+
+The three pitakas and seven collections are:
+
+```{r texts-collections}
+table(texts$pitaka)
+table(texts$collection)
+```
+
+## Lemma frequencies
+
+The `lemmas` dataset is a frequency table computed from the lemmatized text.
+It is not shipped with the package but computed automatically on first access
+(about 5 seconds):
+
+```{r lemmas-overview}
+dim(lemmas)
+head(lemmas)
+```
+
+Each row gives the count and frequency of one lemma in one text unit. This
+makes it easy to find the most common words across the entire canon:
+
+```{r lemmas-top}
+totals <- tapply(lemmas$n, lemmas$word, sum)
+head(sort(totals, decreasing = TRUE), 15)
+```
+
+The most frequent lemmas are grammatical particles: *ta* (that/it), *ti*
+(quotative marker), *ca* (and), *na* (not). The first content word is
+*dhamma* (teaching, truth, phenomenon) --- the central concept of the entire
+canon. Further down, *bhikkhave* (O monks, vocative) and *bhikkhu* (monk)
+both appear in the top 20, reflecting that the primary audience for these
+teachings was the monastic community.
+
+Or within a single collection:
+
+```{r lemmas-by-collection}
+dn_lemmas <- lemmas[lemmas$collection == "dn", ]
+dn_totals <- tapply(dn_lemmas$n, dn_lemmas$word, sum)
+head(sort(dn_totals, decreasing = TRUE), 10)
+```
+
+## Searching for a lemma
+
+The `search_lemma()` function finds all text units containing a given lemma,
+sorted by frequency:
+
+```{r search}
+# Where does "nibbana" appear most frequently?
+nibbana <- search_lemma("nibbana")
+head(nibbana[, c("id", "collection", "n", "freq")])
+```
+
+```{r search-dhamma}
+# "dhamma" across collections
+dhamma <- search_lemma("dhamma")
+tapply(dhamma$n, dhamma$collection, sum)
+```
+
+## Document-term matrix
+
+The `dtm` dataset is a sparse matrix (from the **Matrix** package) with text
+units as rows and lemmas as columns. Values are within-document frequencies.
+Like `lemmas`, it is computed on first access:
+
+```{r dtm-overview}
+dim(dtm)
+class(dtm)
+
+# Sparsity (proportion of zero entries)
+1 - length(dtm@x) / prod(dim(dtm))
+```
+
+## Visualizing the Canon
+
+The DTM enables standard text-analysis workflows. We can start with a simple
+example: hierarchical clustering of the 34 Digha Nikaya suttas.
+
+```{r dn-cluster, fig.width=7, fig.height=4}
+dn_ids <- texts$id[texts$collection == "dn"]
+dn_dtm <- dtm[dn_ids, ]
+
+# Drop empty columns
+dn_dtm <- dn_dtm[, colSums(dn_dtm) > 0]
+
+d <- dist(as.matrix(dn_dtm))
+hc <- hclust(d, method = "ward.D2")
+plot(hc, main = "Digha Nikaya — Hierarchical Clustering",
+     xlab = "", sub = "", cex = 0.7)
+```
+
+### PCA of the entire Canon
+
+To see how all 5,777 text units relate to each other, we can project the DTM
+into two dimensions using principal component analysis. We use the 500 most
+frequent lemmas to keep the computation fast:
+
+```{r pca, fig.width=7, fig.height=6}
+# Select top 500 lemmas by total frequency
+col_sums <- colSums(dtm)
+top_terms <- names(sort(col_sums, decreasing = TRUE))[1:500]
+dtm_sub <- as.matrix(dtm[, top_terms])
+
+# PCA
+pca <- prcomp(dtm_sub, center = TRUE, scale. = FALSE)
+pct_var <- summary(pca)$importance[2, 1:2] * 100
+
+# Color by collection
+coll_colors <- c(
+  abhidhamma = "#E41A1C", an = "#377EB8", dn = "#4DAF4A",
+  kn = "#FF7F00", mn = "#984EA3", sn = "#A65628",
+  vinaya = "#F781BF"
+)
+pt_col <- coll_colors[texts$collection]
+
+plot(pca$x[, 1], pca$x[, 2],
+     col = adjustcolor(pt_col, alpha.f = 0.5), pch = 16, cex = 0.6,
+     xlab = paste0("PC1 (", round(pct_var[1], 1), "%)"),
+     ylab = paste0("PC2 (", round(pct_var[2], 1), "%)"),
+     main = "PCA of All Tipitaka Texts")
+legend("topright",
+       c("Abhidhamma", "AN", "DN", "KN", "MN", "SN", "Vinaya"),
+       col = coll_colors, pch = 16, cex = 0.8)
+```
+
+The Abhidhamma texts cluster distinctly from the Sutta Pitaka, reflecting
+their specialized technical vocabulary. Within the Sutta Pitaka, the five
+nikayas overlap substantially but show characteristic tendencies.
+
+### Canon-wide hierarchical clustering
+
+For a dendrogram of the whole canon, we aggregate texts to an intermediate
+level: individual suttas for DN and MN, samyuttas for SN, nipatas for AN,
+and individual texts for KN, Vinaya, and Abhidhamma.
+
+```{r canon-cluster, fig.width=7, fig.height=10}
+# Create group IDs at an intermediate level
+group_id <- texts$id
+
+# SN: sn1.1 -> sn1 (by samyutta)
+sn_mask <- texts$collection == "sn"
+group_id[sn_mask] <- sub("\\..*", "", group_id[sn_mask])
+
+# AN: an1.1 -> an1 (by nipata)
+an_mask <- texts$collection == "an"
+group_id[an_mask] <- sub("\\..*", "", group_id[an_mask])
+
+# KN: dhp1-20 -> dhp, snp1.1 -> snp, etc. (by text)
+kn_mask <- texts$collection == "kn"
+group_id[kn_mask] <- sub("[0-9].*", "", group_id[kn_mask])
+
+# Aggregate DTM by group (mean of member frequencies)
+groups <- unique(group_id)
+group_dtm <- matrix(0, length(groups), length(top_terms))
+group_coll <- character(length(groups))
+for (i in seq_along(groups)) {
+  rows <- which(group_id == groups[i])
+  if (length(rows) == 1) {
+    group_dtm[i, ] <- dtm_sub[rows, ]
+  } else {
+    group_dtm[i, ] <- colMeans(dtm_sub[rows, ])
+  }
+  group_coll[i] <- texts$collection[rows[1]]
+}
+rownames(group_dtm) <- groups
+
+# Cluster
+d <- dist(group_dtm)
+hc <- hclust(d, method = "ward.D2")
+
+# Color labels by collection
+label_col <- coll_colors[group_coll[hc$order]]
+dend <- as.dendrogram(hc)
+# Apply colors to leaf labels
+color_labels <- function(n, col_vec) {
+  if (is.leaf(n)) {
+    i <- match(attr(n, "label"), groups[hc$order])
+    attr(n, "nodePar") <- list(pch = NA, lab.col = col_vec[i], lab.cex = 0.45)
+  }
+  n
+}
+dend <- dendrapply(dend, color_labels, col_vec = label_col)
+
+par(mar = c(2, 1, 2, 8))
+plot(dend, horiz = TRUE, main = "Tipitaka — Hierarchical Clustering",
+     xlab = "")
+legend("topleft",
+       c("Abhidhamma", "AN", "DN", "KN", "MN", "SN", "Vinaya"),
+       text.col = coll_colors, cex = 0.7, bty = "n")
+```
+
+The dendrogram reveals how texts cluster by vocabulary: Abhidhamma and Vinaya
+texts form their own branches, while within the Sutta Pitaka, texts with
+similar subject matter cluster together regardless of which nikaya they
+belong to.
+
+## Further resources
+
+The companion package
+[tipitaka](https://CRAN.R-project.org/package=tipitaka)
+provides the original VRI edition text and Pali text tools including
+Pali-alphabet sorting.

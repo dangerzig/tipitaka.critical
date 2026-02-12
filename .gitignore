@@ -1,3 +1,5 @@
 *.Rcheck/
 *.tar.gz
 data-raw/texts.csv
+/doc/
+/Meta/

@@ -63,7 +63,8 @@ search_lemma("nibbana")
 ## Related
 
 The companion package [tipitaka](https://CRAN.R-project.org/package=tipitaka)
-provides the original VRI edition data and Pali text processing tools.
+provides the original VRI edition data and Pali text tools including
+Pali-alphabet sorting.
 
 ## License
 
