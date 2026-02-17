@@ -229,12 +229,13 @@ color_labels <- function(n, col_vec) {
 }
 dend <- dendrapply(dend, color_labels, col_vec = label_col)
 
-par(mar = c(2, 1, 2, 8))
+oldpar <- par(mar = c(2, 1, 2, 8))
 plot(dend, horiz = TRUE, main = "Tipitaka — Hierarchical Clustering",
      xlab = "")
 legend("topleft",
        c("Abhidhamma", "AN", "DN", "KN", "MN", "SN", "Vinaya"),
        text.col = coll_colors, cex = 0.7, bty = "n")
+par(oldpar)
 ```
 
 The dendrogram reveals how texts cluster by vocabulary: Abhidhamma and Vinaya
